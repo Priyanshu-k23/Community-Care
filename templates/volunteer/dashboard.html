@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 w-full flex-grow transition-colors duration-300">
+
+    <div class="md:flex md:items-center md:justify-between mb-8 pb-5 border-b border-gray-200 dark:border-dark-border animate-fade-in-up">
+        <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-3">
+                <h2 class="text-3xl font-bold font-heading text-gray-900 dark:text-white sm:truncate">
+                    Volunteer Dashboard
+                </h2>
+                {% if current_user.badges %}
+                    {% for badge in current_user.badges.split(',') %}
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-700 shadow-sm transition-all hover:scale-105 cursor-default">
+                            <i class="fa-solid fa-star mr-1"></i>{{ badge }}
+                        </span>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            <p class="mt-2 text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                Welcome back, <span class="font-medium text-yellow-600 dark:text-yellow-500">{{ current_user.volunteer_profile.full_name }}</span>.
+                <span class="inline-flex items-center text-xs font-bold text-yellow-600 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900/30 px-2 py-0.5 rounded-full"><i class="fa-solid fa-bolt mr-1"></i> {{ current_user.points }} pts</span>
+            </p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+        <!-- Active / My Tasks -->
+        <div class="animate-fade-in-up" style="animation-delay: 0.1s;">
+            <h3 class="text-xl font-bold font-heading leading-6 text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+                <i class="fa-solid fa-list-check text-brand-500"></i> My Active Deliveries
+            </h3>
+
+            <div class="glass-panel shadow-lg sm:rounded-2xl divide-y divide-gray-200 dark:divide-dark-border overflow-hidden">
+                {% if my_tasks %}
+                <ul role="list">
+                    {% for t in my_tasks %}
+                    <li class="p-6 transition-colors {% if t.status == 'Delivered' %}bg-gray-50/50 dark:bg-dark-panel/30 opacity-75{% else %}hover:bg-gray-50/30 dark:hover:bg-dark-panel/50{% endif %}">
+                        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-5 gap-4">
+                            <div>
+                                <div class="flex items-center gap-3 mb-2">
+                                    <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm
+                                        {% if t.donation.item_type == 'Food' %}bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400
+                                        {% elif t.donation.item_type == 'Medicine' %}bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400
+                                        {% elif t.donation.item_type == 'Sanitary' %}bg-brand-100 text-brand-600 dark:bg-brand-900/30 dark:text-brand-400
+                                        {% else %}bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400{% endif %}">
+                                        {% if t.donation.item_type == 'Food' %}<i class="fa-solid fa-bowl-food"></i>
+                                        {% elif t.donation.item_type == 'Medicine' %}<i class="fa-solid fa-pills"></i>
+                                        {% elif t.donation.item_type == 'Sanitary' %}<i class="fa-solid fa-pump-soap"></i>
+                                        {% else %}<i class="fa-solid fa-box"></i>{% endif %}
+                                    </div>
+                                    <div>
+                                        <p class="text-lg font-bold font-heading text-gray-900 dark:text-white">{{ t.donation.item_type }}</p>
+                                        <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t.donation.quantity_desc }}</p>
+                                    </div>
+                                </div>
+                                <div class="mt-2 text-sm">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold shadow-sm border
+                                            {% if t.status == 'Accepted' %}bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800
+                                            {% elif t.status == 'Picked Up' %}bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400 border-purple-200 dark:border-purple-800
+                                            {% elif t.status == 'On The Way' %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800
+                                            {% elif t.status == 'Delivered' %}bg-brand-100 text-brand-800 dark:bg-brand-900/30 dark:text-brand-400 border-brand-200 dark:border-brand-800
+                                            {% endif %}">
+                                        {% if t.status == 'Accepted' %}<i class="fa-solid fa-check mr-1.5"></i>
+                                        {% elif t.status == 'Picked Up' %}<i class="fa-solid fa-box-open mr-1.5"></i>
+                                        {% elif t.status == 'On The Way' %}<i class="fa-solid fa-truck-fast mr-1.5"></i>
+                                        {% elif t.status == 'Delivered' %}<i class="fa-solid fa-check-circle mr-1.5"></i>
+                                        {% endif %}
+                                        {{ t.status }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {% if t.status != 'Delivered' %}
+                            <form action="{{ url_for('volunteer.update_status', delivery_id=t.id) }}" method="POST"
+                                class="flex flex-col space-y-3 w-full sm:w-auto bg-white/50 dark:bg-dark-bg/50 p-3 rounded-xl border border-gray-100 dark:border-dark-border/50">
+                                <label class="text-xs font-medium text-gray-500 dark:text-gray-400">Update Status:</label>
+                                <select name="status"
+                                    class="block w-full pl-3 pr-8 py-2 text-sm border-gray-300 dark:border-dark-border focus:outline-none focus:ring-brand-500 focus:border-brand-500 rounded-lg bg-white dark:bg-dark-panel dark:text-white transition-colors shadow-sm cursor-pointer">
+                                    <option value="Picked Up" {% if t.status == 'Picked Up' %}selected{% endif %}>Picked Up</option>
+                                    <option value="On The Way" {% if t.status == 'On The Way' %}selected{% endif %}>On The Way</option>
+                                    <option value="Delivered" {% if t.status == 'Delivered' %}selected{% endif %}>Delivered</option>
+                                </select>
+                                <button type="submit"
+                                    class="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-brand-600 hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-600 transition-colors w-full">
+                                    <i class="fa-solid fa-arrows-rotate mr-1.5"></i> Update
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+
+                        <div class="bg-white/80 dark:bg-dark-bg/80 rounded-xl border border-gray-200 dark:border-dark-border/50 p-5 relative shadow-sm">
+                            <div class="absolute left-7 top-8 bottom-8 w-0.5 bg-gray-200 dark:bg-dark-border"></div>
+
+                            <!-- Pickup Node -->
+                            <div class="relative flex items-start mb-8 group">
+                                <div class="absolute -left-[5px] flex items-center justify-center bg-blue-500 rounded-full h-3 w-3 mt-1.5 ring-4 ring-white dark:ring-dark-bg transition-transform group-hover:scale-125">
+                                </div>
+                                <div class="ml-8 flex-1 text-sm bg-gray-50 dark:bg-dark-panel/50 p-3 rounded-lg border border-gray-100 dark:border-dark-border/30">
+                                    <p class="font-bold text-gray-900 dark:text-white flex items-center mb-1">
+                                        <i class="fa-solid fa-arrow-up-right-from-square text-blue-500 mr-2 text-xs"></i> Pickup Details
+                                    </p>
+                                    <div class="space-y-1.5 mt-2">
+                                        <p class="text-gray-600 dark:text-gray-300 flex items-start">
+                                            <i class="fa-solid fa-location-dot mt-0.5 mr-2 w-4 text-center text-gray-400"></i>
+                                            <span>{{ t.donation.pickup_address }}</span>
+                                        </p>
+                                        <p class="text-gray-600 dark:text-gray-300 flex items-center">
+                                            <i class="fa-solid fa-user mr-2 w-4 text-center text-gray-400"></i>
+                                            <span>Donor: <span class="font-medium text-gray-900 dark:text-gray-200">{{ t.donation.donor.full_name }}</span> ({{ t.donation.donor.phone }})</span>
+                                        </p>
+                                        <p class="text-gray-500 dark:text-gray-400 italic text-xs flex items-center mt-2">
+                                            <i class="fa-regular fa-clock mr-2 w-4 text-center"></i>
+                                            Expected: {{ t.donation.pickup_datetime.strftime('%b %d, %H:%M') }}
+                                        </p>
+                                    </div>
+                                    {% if t.donation.notes %}
+                                    <div class="mt-3 text-gray-500 dark:text-gray-400 text-xs border-l-2 border-brand-300 dark:border-brand-600 pl-3 py-1 bg-brand-50 dark:bg-brand-900/10 rounded-r-md">
+                                        <i class="fa-solid fa-quote-left mr-1 opacity-50"></i> {{ t.donation.notes }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Dropoff Node -->
+                            <div class="relative flex items-start group">
+                                <div class="absolute -left-[5px] flex items-center justify-center bg-brand-500 rounded-full h-3 w-3 mt-1.5 ring-4 ring-white dark:ring-dark-bg transition-transform group-hover:scale-125">
+                                </div>
+                                <div class="ml-8 flex-1 text-sm bg-gray-50 dark:bg-dark-panel/50 p-3 rounded-lg border border-gray-100 dark:border-dark-border/30">
+                                    <p class="font-bold text-gray-900 dark:text-white flex items-center mb-1">
+                                        <i class="fa-solid fa-arrow-down-to-square text-brand-500 mr-2 text-xs"></i> Dropoff at NGO
+                                    </p>
+                                    <div class="space-y-1.5 mt-2">
+                                        <p class="text-gray-600 dark:text-gray-300 flex items-start">
+                                            <i class="fa-solid fa-location-dot mt-0.5 mr-2 w-4 text-center text-gray-400"></i>
+                                            <span>{{ t.donation.claimed_by_ngo.address }}</span>
+                                        </p>
+                                        <p class="text-gray-600 dark:text-gray-300 flex items-center">
+                                            <i class="fa-solid fa-building mr-2 w-4 text-center text-gray-400"></i>
+                                            <span class="font-medium text-gray-900 dark:text-gray-200">{{ t.donation.claimed_by_ngo.name }}</span>
+                                        </p>
+                                        <p class="text-gray-600 dark:text-gray-300 flex items-center">
+                                            <i class="fa-solid fa-phone mr-2 w-4 text-center text-gray-400"></i>
+                                            <span>{{ t.donation.claimed_by_ngo.phone }}</span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if t.status not in ['Pending', 'Delivered'] %}
+                        <div class="mt-5 pt-5 border-t border-gray-100 dark:border-dark-border/50 flex justify-end">
+                            <a href="{{ url_for('main.track_delivery', delivery_id=t.id) }}"
+                                class="inline-flex items-center px-5 py-2.5 border border-brand-200 dark:border-brand-800/50 shadow-sm text-sm font-medium rounded-lg text-brand-700 dark:text-brand-400 bg-brand-50 dark:bg-brand-900/20 hover:bg-brand-100 dark:hover:bg-brand-900/40 transition-all hover:shadow hover:-translate-y-0.5">
+                                <div class="relative flex h-3 w-3 mr-2">
+                                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
+                                  <span class="relative inline-flex rounded-full h-3 w-3 bg-brand-500"></span>
+                                </div>
+                                Start Live Location Tracking
+                            </a>
+                        </div>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="p-12 text-center">
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 dark:bg-dark-panel text-gray-400 dark:text-gray-500 mb-4 mx-auto">
+                        <i class="fa-solid fa-clipboard-list text-2xl"></i>
+                    </div>
+                    <p class="text-gray-900 dark:text-white text-lg font-medium font-heading">No active deliveries</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Check the available tasks to claim one.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Available Tasks -->
+        <div class="animate-fade-in-up" style="animation-delay: 0.2s;">
+            <h3 class="text-xl font-bold font-heading leading-6 text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+                <i class="fa-solid fa-truck-fast text-blue-500"></i> Available Delivery Tasks
+            </h3>
+
+            <div class="glass-panel shadow-lg sm:rounded-2xl divide-y divide-gray-200 dark:divide-dark-border overflow-hidden">
+                {% if available %}
+                <ul role="list">
+                    {% for a in available %}
+                    <li class="p-5 hover:bg-gray-50/50 dark:hover:bg-dark-panel/80 transition-colors">
+                        <div class="flex flex-col sm:flex-row gap-4 justify-between">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-3 mb-3">
+                                    <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm
+                                        {% if a.donation.item_type == 'Food' %}bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400
+                                        {% elif a.donation.item_type == 'Medicine' %}bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400
+                                        {% elif a.donation.item_type == 'Sanitary' %}bg-brand-100 text-brand-600 dark:bg-brand-900/30 dark:text-brand-400
+                                        {% else %}bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400{% endif %}">
+                                        {% if a.donation.item_type == 'Food' %}<i class="fa-solid fa-bowl-food shadow-sm"></i>
+                                        {% elif a.donation.item_type == 'Medicine' %}<i class="fa-solid fa-pills shadow-sm"></i>
+                                        {% elif a.donation.item_type == 'Sanitary' %}<i class="fa-solid fa-pump-soap shadow-sm"></i>
+                                        {% else %}<i class="fa-solid fa-box shadow-sm"></i>{% endif %}
+                                    </div>
+                                    <div>
+                                        <p class="text-base font-bold font-heading text-gray-900 dark:text-white">{{ a.donation.item_type }}</p>
+                                        <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ a.donation.quantity_desc }}</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-gray-50 dark:bg-dark-bg/50 rounded-xl p-3 border border-gray-100 dark:border-dark-border/50 space-y-2 mt-3 text-sm">
+                                    <div class="flex items-start">
+                                        <div class="w-6 flex shrink-0 justify-center text-blue-500 mt-0.5"><i class="fa-solid fa-location-dot"></i></div>
+                                        <div>
+                                            <span class="font-semibold text-gray-700 dark:text-gray-300">From:</span>
+                                            <span class="text-gray-900 dark:text-white line-clamp-1 break-all" title="{{ a.donation.pickup_address }}">{{ a.donation.pickup_address }}</span>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ a.donation.donor.full_name }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="ml-3 h-3 border-l-2 border-dashed border-gray-300 dark:border-gray-600 my-0.5"></div>
+                                    
+                                    <div class="flex items-start">
+                                        <div class="w-6 flex shrink-0 justify-center text-brand-500 mt-0.5"><i class="fa-solid fa-location-dot"></i></div>
+                                        <div>
+                                            <span class="font-semibold text-gray-700 dark:text-gray-300">To:</span> 
+                                            <span class="text-gray-900 dark:text-white line-clamp-1 break-all" title="{{ a.donation.claimed_by_ngo.address }}">{{ a.donation.claimed_by_ngo.address }}</span>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ a.donation.claimed_by_ngo.name }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="pt-2 mt-2 border-t border-gray-200 dark:border-dark-border/50 flex items-center">
+                                        <div class="w-6 flex shrink-0 justify-center text-gray-400 dark:text-gray-500"><i class="fa-regular fa-clock"></i></div>
+                                        <div>
+                                            <span class="font-semibold text-gray-700 dark:text-gray-300 mr-1">Pickup Time:</span>
+                                            <span class="text-gray-900 dark:text-white font-medium">{{ a.donation.pickup_datetime.strftime('%b %d, %H:%M') }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="sm:ml-4 flex-shrink-0 flex items-center sm:items-start justify-end sm:justify-start mt-2 sm:mt-0 pt-4 sm:pt-0 border-t sm:border-t-0 border-gray-100 dark:border-dark-border/50">
+                                <form action="{{ url_for('volunteer.accept_task', delivery_id=a.id) }}" method="POST" class="w-full sm:w-auto">
+                                    <button type="submit"
+                                        class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-dark-panel transition-all hover:-translate-y-0.5 hover:shadow w-full">
+                                        <i class="fa-solid fa-hand-holding-hand mr-2"></i> Accept Task
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="p-12 text-center">
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-400 dark:text-blue-500 mb-4 mx-auto">
+                        <i class="fa-solid fa-mug-hot text-2xl"></i>
+                    </div>
+                    <p class="text-gray-900 dark:text-white text-lg font-medium font-heading">No pending requests</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">NGOs and Donors are currently synced up.<br>Take a break!</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

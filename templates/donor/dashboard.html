@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 w-full flex-grow transition-colors duration-300">
+
+    <div class="md:flex md:items-center md:justify-between mb-8 pb-5 border-b border-gray-200 dark:border-dark-border animate-fade-in-up">
+        <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-3">
+                <h2 class="text-3xl font-bold font-heading text-gray-900 dark:text-white sm:truncate">
+                    Donor Dashboard
+                </h2>
+                {% if current_user.badges %}
+                    {% for badge in current_user.badges.split(',') %}
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-brand-100 text-brand-800 dark:bg-brand-900/50 dark:text-brand-300 border border-brand-200 dark:border-brand-700 shadow-sm transition-all hover:scale-105 cursor-default">
+                            <i class="fa-solid fa-medal mr-1"></i>{{ badge }}
+                        </span>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            <p class="mt-2 text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                Welcome back, <span class="font-medium text-brand-600 dark:text-brand-400">{{ current_user.donor_profile.full_name }}</span>
+                <span class="inline-flex items-center text-xs font-bold text-yellow-600 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900/30 px-2 py-0.5 rounded-full"><i class="fa-solid fa-bolt mr-1"></i> {{ current_user.points }} pts</span>
+            </p>
+        </div>
+        <div class="mt-4 flex md:mt-0 md:ml-4">
+            <a href="{{ url_for('donor.create_donation') }}"
+                class="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-md hover:shadow-lg text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 dark:focus:ring-offset-dark-bg transition-all hover:-translate-y-0.5">
+                <i class="fa-solid fa-plus mr-2"></i> Create New Donation
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2 mb-10 animate-fade-in-up" style="animation-delay: 0.1s;">
+        <div class="glass-panel overflow-hidden rounded-2xl p-6 shadow-lg relative group hover:-translate-y-2 transition-all duration-300">
+            <div class="absolute -right-6 -top-6 text-brand-100 dark:text-brand-900/30 opacity-50 group-hover:scale-110 transition-transform duration-500">
+                <i class="fa-solid fa-box-open text-8xl"></i>
+            </div>
+            <div class="flex items-center relative z-10">
+                <div class="flex-shrink-0 bg-gradient-to-br from-brand-400 to-brand-600 rounded-xl p-4 shadow-md text-white">
+                    <i class="fa-solid fa-hand-holding-heart text-2xl"></i>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                    <dl>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Donations Made</dt>
+                        <dd class="text-4xl font-bold font-heading text-gray-900 dark:text-white mt-1">{{ stats.total_donated }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+        
+        <div class="glass-panel overflow-hidden rounded-2xl p-6 shadow-lg relative group hover:-translate-y-2 transition-all duration-300">
+            <div class="absolute -right-6 -top-6 text-blue-100 dark:text-blue-900/30 opacity-50 group-hover:scale-110 transition-transform duration-500">
+                <i class="fa-solid fa-people-group text-8xl"></i>
+            </div>
+            <div class="flex items-center relative z-10">
+                <div class="flex-shrink-0 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl p-4 shadow-md text-white">
+                    <i class="fa-solid fa-users text-2xl"></i>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                    <dl>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Estimated People Helped</dt>
+                        <dd class="text-4xl font-bold font-heading text-gray-900 dark:text-white mt-1">{{ stats.people_helped }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart Section -->
+    <div class="glass-panel overflow-hidden rounded-2xl p-6 shadow-lg mb-10 animate-fade-in-up" style="animation-delay: 0.15s;">
+        <h3 class="text-xl font-bold font-heading text-gray-900 dark:text-white mb-4">Your Impact Over Time</h3>
+        <div class="w-full h-64">
+            <canvas id="impactChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Active & Past Donations -->
+    <h3 class="text-xl font-bold font-heading leading-6 text-gray-900 dark:text-white mb-6 animate-fade-in-up" style="animation-delay: 0.2s;">Your Donation History</h3>
+    
+    <div class="glass-panel shadow-lg sm:rounded-2xl divide-y divide-gray-200 dark:divide-dark-border animate-fade-in-up overflow-hidden" style="animation-delay: 0.3s;">
+        {% if donations %}
+        <ul role="list">
+            {% for d in donations %}
+            <li>
+                <div class="block px-4 py-5 sm:px-6 hover:bg-gray-50/50 dark:hover:bg-dark-panel/80 transition-colors">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="mr-4 flex-shrink-0">
+                                {% if d.item_type == 'Food' %}<div class="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-500 flex items-center justify-center"><i class="fa-solid fa-bowl-food"></i></div>
+                                {% elif d.item_type == 'Medicine' %}<div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-500 flex items-center justify-center"><i class="fa-solid fa-pills"></i></div>
+                                {% elif d.item_type == 'Sanitary' %}<div class="w-10 h-10 rounded-full bg-brand-100 dark:bg-brand-900/30 text-brand-500 flex items-center justify-center"><i class="fa-solid fa-pump-soap"></i></div>
+                                {% else %}<div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 flex items-center justify-center"><i class="fa-solid fa-box"></i></div>{% endif %}
+                            </div>
+                            <div>
+                                <p class="text-base font-bold text-gray-900 dark:text-white">
+                                    {{ d.item_type }} 
+                                </p>
+                                <p class="text-sm font-medium text-brand-600 dark:text-brand-400 truncate">
+                                    {{ d.quantity_desc }}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-end gap-2">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold
+                                    {% if d.status == 'Available' %}bg-brand-100 text-brand-800 dark:bg-brand-900/30 dark:text-brand-400 border border-brand-200 dark:border-brand-800
+                                    {% elif d.status == 'Claimed' %}bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800
+                                    {% elif d.status == 'Picked Up' or d.status == 'On The Way' %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800
+                                    {% elif d.status == 'Delivered' %}bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-600
+                                    {% else %}bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-600{% endif %} shadow-sm">
+                                {% if d.status == 'Available' %}<i class="fa-solid fa-box mr-1.5"></i>
+                                {% elif d.status == 'Claimed' %}<i class="fa-solid fa-hand-holding mr-1.5"></i>
+                                {% elif d.status == 'Picked Up' or d.status == 'On The Way' %}<i class="fa-solid fa-truck-fast mr-1.5"></i>
+                                {% elif d.status == 'Delivered' %}<i class="fa-solid fa-check-circle mr-1.5"></i>{% endif %}
+                                {{ d.status }}
+                            </span>
+                            
+                            {% if d.status in ['On The Way', 'Picked Up', 'Claimed'] and d.delivery %}
+                            <a href="{{ url_for('main.track_delivery', delivery_id=d.delivery.id) }}"
+                                class="text-sm text-brand-600 hover:text-brand-800 dark:text-brand-400 dark:hover:text-brand-300 font-medium flex items-center bg-brand-50 dark:bg-brand-900/20 px-2.5 py-1 rounded-md transition-colors border border-brand-100 dark:border-brand-800/50">
+                                <i class="fa-solid fa-location-dot mr-1.5"></i> Track Live
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="mt-4 sm:flex sm:justify-between items-center bg-gray-50 dark:bg-dark-bg/50 p-3 rounded-xl border border-gray-100 dark:border-dark-border/50">
+                        <div class="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                            <i class="fa-regular fa-calendar mr-2 text-gray-400"></i>
+                            Created: {{ d.created_at.strftime('%b %d, %Y') }}
+                        </div>
+                        <div class="mt-2 text-sm text-gray-600 dark:text-gray-300 sm:mt-0 flex items-center">
+                            {% if d.claimed_by_ngo %}
+                            <i class="fa-solid fa-building text-blue-500 mr-2"></i> Claimed by <span class="font-medium text-gray-900 dark:text-white ml-1">{{ d.claimed_by_ngo.name }}</span>
+                            {% else %}
+                            <i class="fa-regular fa-clock text-yellow-500 mr-2"></i> Waiting for NGO to claim
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="px-4 py-16 text-center sm:px-6">
+            <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-100 dark:bg-dark-panel text-gray-400 dark:text-gray-500 mb-6 mx-auto">
+                <i class="fa-solid fa-box-open text-4xl"></i>
+            </div>
+            <p class="text-gray-500 dark:text-gray-400 text-lg font-medium mb-2">You haven't listed any donations yet.</p>
+            <p class="text-gray-400 dark:text-gray-500 text-sm max-w-sm mx-auto mb-8">Your contribution can make a big difference. Start sharing today!</p>
+            <div>
+                <a href="{{ url_for('donor.create_donation') }}"
+                    class="inline-flex items-center px-6 py-3 border border-transparent rounded-lg shadow-md hover:shadow-lg text-base font-medium text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-all hover:-translate-y-1">
+                    <i class="fa-solid fa-heart mr-2"></i> Make Your First Donation
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const ctx = document.getElementById('impactChart').getContext('2d');
+        
+        // Gradient for line
+        let gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(34, 197, 94, 0.5)'); // Brand color
+        gradient.addColorStop(1, 'rgba(34, 197, 94, 0.0)');
+        
+        // Mock data based on stats
+        const totalDonated = {{ stats.total_donated }};
+        // Just simulating a progressive growth graph for the aesthetics
+        const mockData = [0, Math.round(totalDonated*0.2), Math.round(totalDonated*0.4), Math.round(totalDonated*0.7), Math.round(totalDonated*0.8), totalDonated];
+        
+        const isDarkMode = document.documentElement.classList.contains('dark');
+        const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+        const textColor = isDarkMode ? '#f3f4f6' : '#4b5563';
+
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Donations Over Time',
+                    data: mockData,
+                    borderColor: '#22c55e',
+                    backgroundColor: gradient,
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#22c55e',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: isDarkMode ? '#1f2937' : '#fff',
+                        titleColor: isDarkMode ? '#fff' : '#1f2937',
+                        bodyColor: isDarkMode ? '#cbd5e1' : '#475569',
+                        borderColor: isDarkMode ? '#374151' : '#e2e8f0',
+                        borderWidth: 1,
+                        padding: 10,
+                        displayColors: false,
+                        callbacks: {
+                            label: function(context) {
+                                return context.raw + ' items donated';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: gridColor, drawBorder: false },
+                        ticks: { color: textColor, precision: 0 }
+                    },
+                    x: {
+                        grid: { display: false, drawBorder: false },
+                        ticks: { color: textColor }
+                    }
+                }
+            }
+        });
+
+        // Handle Theme changes for the chart dynamically
+        var themeToggleBtn = document.getElementById('theme-toggle');
+        if (themeToggleBtn) {
+            themeToggleBtn.addEventListener('click', function() {
+                setTimeout(() => {
+                    const dark = document.documentElement.classList.contains('dark');
+                    chart.options.scales.y.grid.color = dark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                    chart.options.scales.y.ticks.color = dark ? '#f3f4f6' : '#4b5563';
+                    chart.options.scales.x.ticks.color = dark ? '#f3f4f6' : '#4b5563';
+                    if (chart.options.plugins.tooltip) {
+                        chart.options.plugins.tooltip.backgroundColor = dark ? '#1f2937' : '#fff';
+                        chart.options.plugins.tooltip.titleColor = dark ? '#fff' : '#1f2937';
+                        chart.options.plugins.tooltip.bodyColor = dark ? '#cbd5e1' : '#475569';
+                        chart.options.plugins.tooltip.borderColor = dark ? '#374151' : '#e2e8f0';
+                    }
+                    chart.update();
+                }, 100); // slight delay to wait for CSS class swap
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 w-full flex-grow transition-colors duration-300">
+
+    <div class="md:flex md:items-center md:justify-between mb-8 animate-fade-in-up">
+        <div class="flex-1 min-w-0">
+            <h2 class="text-3xl font-bold font-heading leading-7 text-gray-900 dark:text-white sm:truncate">
+                Registered Users
+            </h2>
+        </div>
+        <div class="mt-4 flex md:mt-0 md:ml-4">
+            <a href="{{ url_for('admin.dashboard') }}"
+                class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-dark-panel hover:bg-gray-50 dark:hover:bg-dark-bg transition-colors">
+                <i class="fa-solid fa-arrow-left mr-2"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Donors -->
+    <h3 class="text-xl font-bold font-heading leading-6 text-gray-900 dark:text-white mb-4 mt-8 flex items-center gap-2 animate-fade-in-up" style="animation-delay: 0.1s;">
+        <i class="fa-solid fa-gift text-brand-500"></i> Donors
+    </h3>
+    <div class="glass-panel shadow-lg overflow-x-auto rounded-2xl mb-10 animate-fade-in-up" style="animation-delay: 0.2s;">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-dark-border">
+            <thead class="bg-gray-50/80 dark:bg-dark-bg/80 backdrop-blur-sm">
+                <tr>
+                    <th scope="col"
+                        class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Name / Email</th>
+                    <th scope="col"
+                        class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Phone
+                    </th>
+                    <th scope="col"
+                        class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Donations
+                        Made</th>
+                    <th scope="col"
+                        class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-dark-border">
+                {% for d in donors %}
+                <tr class="hover:bg-gray-50/50 dark:hover:bg-dark-panel/50 transition-colors">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900 dark:text-white">{{ d.full_name }}</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">{{ d.user.email }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">{{ d.phone }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-brand-100 text-brand-800 dark:bg-brand-900/30 dark:text-brand-400 border border-brand-200 dark:border-brand-800">
+                            {{ d.donations|length }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if d.user.is_approved %}
+                        <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-lg bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800"><i class="fa-solid fa-check mr-1.5 mt-0.5"></i> Approved</span>
+                        {% else %}
+                        <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-lg bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800"><i class="fa-regular fa-clock mr-1.5 mt-0.5"></i> Pending</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- NGOs -->
+    <h3 class="text-xl font-bold font-heading leading-6 text-gray-900 dark:text-white mb-4 flex items-center gap-2 animate-fade-in-up" style="animation-delay: 0.3s;">
+        <i class="fa-solid fa-hands-holding-child text-blue-500"></i> NGOs
+    </h3>
+    <div class="glass-panel shadow-lg overflow-x-auto rounded-2xl mb-10 animate-fade-in-up" style="animation-delay: 0.4s;">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-dark-border">
+            <thead class="bg-gray-50/80 dark:bg-dark-bg/80 backdrop-blur-sm">
+                <tr>
+                    <th scope="col"
+                        class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">NGO
+                        Name / Reg No</th>
+                    <th scope="col"
+                        class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Contact
+                    </th>
+                    <th scope="col"
+                        class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Donations
+                        Claimed</th>
+                    <th scope="col"
+                        class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-dark-border">
+                {% for n in ngos %}
+                <tr class="hover:bg-gray-50/50 dark:hover:bg-dark-panel/50 transition-colors">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900 dark:text-white">{{ n.name }}</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400 truncate max-w-[200px]" title="{{ n.registration_number }}">{{ n.registration_number }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900 dark:text-gray-200">{{ n.contact_person }}</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400"><i class="fa-solid fa-phone text-xs mr-1 opacity-70"></i> {{ n.phone }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                            {{ n.claimed_donations|length }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if n.user.is_approved %}
+                        <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-lg bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800"><i class="fa-solid fa-check mr-1.5 mt-0.5"></i> Approved</span>
+                        {% else %}
+                        <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-lg bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800"><i class="fa-regular fa-clock mr-1.5 mt-0.5"></i> Pending</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Volunteers -->
+    <h3 class="text-xl font-bold font-heading leading-6 text-gray-900 dark:text-white mb-4 flex items-center gap-2 animate-fade-in-up" style="animation-delay: 0.5s;">
+        <i class="fa-solid fa-truck-fast text-yellow-500"></i> Volunteers
+    </h3>
+    <div class="glass-panel shadow-lg overflow-x-auto rounded-2xl mb-8 animate-fade-in-up" style="animation-delay: 0.6s;">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-dark-border">
+            <thead class="bg-gray-50/80 dark:bg-dark-bg/80 backdrop-blur-sm">
+                <tr>
+                    <th scope="col"
+                        class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Name / Email</th>
+                    <th scope="col"
+                        class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Phone /
+                        Vehicle</th>
+                    <th scope="col"
+                        class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Deliveries</th>
+                    <th scope="col"
+                        class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-dark-border">
+                {% for v in volunteers %}
+                <tr class="hover:bg-gray-50/50 dark:hover:bg-dark-panel/50 transition-colors">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900 dark:text-white">{{ v.full_name }}</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">{{ v.user.email }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900 dark:text-gray-200"><i class="fa-solid fa-phone text-xs mr-1 text-gray-400"></i> {{ v.phone }}</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400 mt-1"><i class="fa-solid fa-car text-xs mr-1 text-gray-400"></i> {{ v.vehicle_type }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800">
+                            {{ v.deliveries|length }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if v.user.is_approved %}
+                        <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-lg bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800"><i class="fa-solid fa-check mr-1.5 mt-0.5"></i> Approved</span>
+                        {% else %}
+                        <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-lg bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800"><i class="fa-regular fa-clock mr-1.5 mt-0.5"></i> Pending</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+{% endblock %}

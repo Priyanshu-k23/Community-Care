@@ -1,0 +1,385 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8 w-full flex-grow flex flex-col">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center gap-4">
+            <span class="text-gray-400 font-medium tracking-wide">Delivery ID: #{{ delivery.id }}</span>
+            <span class="px-4 py-1 bg-blue-100 text-blue-800 font-bold rounded-full text-sm shadow-sm border border-blue-200">
+                {{ delivery.status }}
+            </span>
+        </div>
+        <div>
+            {% if current_user.role == 'volunteer' %}
+                <a href="{{ url_for('volunteer.dashboard') }}" class="bg-white text-gray-800 px-5 py-2.5 rounded-lg font-bold shadow-sm hover:shadow-md border border-gray-200 transition-all">Back to Dashboard</a>
+            {% elif current_user.role == 'ngo' %}
+                <a href="{{ url_for('ngo.dashboard') }}" class="bg-white text-gray-800 px-5 py-2.5 rounded-lg font-bold shadow-sm hover:shadow-md border border-gray-200 transition-all">Back to Dashboard</a>
+            {% elif current_user.role == 'donor' %}
+                <a href="{{ url_for('donor.dashboard') }}" class="bg-white text-gray-800 px-5 py-2.5 rounded-lg font-bold shadow-sm hover:shadow-md border border-gray-200 transition-all">Back to Dashboard</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Delivery Progress Card -->
+    <div class="bg-white rounded-2xl p-8 shadow-lg mb-8">
+        <h3 class="text-gray-500 font-extrabold tracking-widest text-xs mb-8 uppercase">Delivery Progress</h3>
+        
+        <!-- Progress Bar Status Logic -->
+        {% set progress_width = '0%' %}
+        {% set step_1_active = true %} <!-- Request is always active relative to creation -->
+        {% set step_2_active = false %}
+        {% set step_3_active = false %}
+        {% set step_4_active = false %}
+        {% set step_5_active = false %}
+
+        {% if delivery.status == 'Accepted' %}
+            {% set progress_width = '25%' %}
+            {% set step_2_active = true %}
+        {% elif delivery.status == 'Picked Up' %}
+            {% set progress_width = '50%' %}
+            {% set step_2_active = true %}
+            {% set step_3_active = true %}
+        {% elif delivery.status == 'On The Way' %}
+            {% set progress_width = '75%' %}
+            {% set step_2_active = true %}
+            {% set step_3_active = true %}
+            {% set step_4_active = true %}
+        {% elif delivery.status == 'Delivered' %}
+            {% set progress_width = '100%' %}
+            {% set step_2_active = true %}
+            {% set step_3_active = true %}
+            {% set step_4_active = true %}
+            {% set step_5_active = true %}
+        {% endif %}
+
+        <div class="relative flex justify-between items-center w-full px-4 sm:px-10">
+            <!-- Background Line -->
+            <div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-2 bg-gray-200 rounded-full"></div>
+            <!-- Active Line -->
+            <div class="absolute left-0 top-1/2 -translate-y-1/2 h-2 bg-blue-500 rounded-full transition-all duration-1000 ease-in-out" style="width: {{ progress_width }};"></div>
+            
+            <!-- Point 1: Request -->
+            <div class="relative flex flex-col items-center">
+                <div class="w-10 h-10 rounded-full {% if step_1_active %}bg-blue-500 text-white border-blue-100{% else %}bg-gray-200 text-gray-400 border-white{% endif %} flex items-center justify-center z-10 border-4 shadow-sm transition-colors duration-500">
+                    <i class="fa-solid fa-clock text-sm"></i>
+                </div>
+                <span class="mt-3 text-sm font-bold {% if step_1_active %}text-blue-600{% else %}text-gray-400{% endif %}">Request</span>
+            </div>
+
+            <!-- Point 2: Accepted -->
+            <div class="relative flex flex-col items-center">
+                <div class="w-10 h-10 rounded-full {% if step_2_active %}bg-blue-500 text-white border-blue-100{% else %}bg-gray-200 text-gray-400 border-white{% endif %} flex items-center justify-center z-10 border-4 shadow-sm transition-colors duration-500">
+                    <i class="fa-solid fa-user-check text-sm"></i>
+                </div>
+                <span class="mt-3 text-sm font-bold {% if step_2_active %}text-blue-600{% else %}text-gray-400{% endif %}">Accepted</span>
+            </div>
+
+            <!-- Point 3: Picked Up -->
+            <div class="relative flex flex-col items-center">
+                <div class="w-10 h-10 rounded-full {% if step_3_active %}bg-blue-500 text-white border-blue-100{% else %}bg-gray-200 text-gray-400 border-white{% endif %} flex items-center justify-center z-10 border-4 shadow-sm transition-colors duration-500">
+                    <i class="fa-solid fa-box-open text-sm"></i>
+                </div>
+                <span class="mt-3 text-sm font-bold {% if step_3_active %}text-blue-600{% else %}text-gray-400{% endif %}">Picked Up</span>
+            </div>
+
+            <!-- Point 4: On The Way -->
+            <div class="relative flex flex-col items-center">
+                <div class="w-10 h-10 rounded-full {% if step_4_active %}bg-blue-500 text-white border-blue-100{% else %}bg-gray-200 text-gray-400 border-white{% endif %} flex items-center justify-center z-10 border-4 shadow-sm transition-colors duration-500">
+                    <i class="fa-solid fa-car-side text-sm"></i>
+                </div>
+                <span class="mt-3 text-sm font-bold {% if step_4_active %}text-blue-600{% else %}text-gray-400{% endif %}">On The Way</span>
+            </div>
+
+            <!-- Point 5: Delivered -->
+            <div class="relative flex flex-col items-center">
+                <div class="w-10 h-10 rounded-full {% if step_5_active %}bg-green-500 text-white border-green-100{% else %}bg-gray-200 text-gray-400 border-white{% endif %} flex items-center justify-center z-10 border-4 shadow-sm transition-colors duration-500">
+                    <i class="fa-solid fa-check-double text-sm"></i>
+                </div>
+                <span class="mt-3 text-sm font-bold {% if step_5_active %}text-green-600{% else %}text-gray-400{% endif %}">Delivered</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Map Container -->
+    <div class="relative h-[600px] w-full rounded-2xl overflow-hidden border-8 border-[#1a202c] shadow-2xl bg-[#f0f0f0]">
+        <!-- Leaflet Map Div -->
+        <div id="map" class="w-full h-full"></div>
+        
+        <!-- Top Right Overlay: Delivery Details -->
+        <div class="absolute top-6 right-6 bg-white/95 backdrop-blur-md rounded-2xl p-6 shadow-xl z-[1000] min-w-[320px] border border-gray-100">
+            <div class="flex justify-between items-center mb-5 border-b border-gray-100 pb-4">
+                <h4 class="font-bold text-gray-900 text-xl tracking-tight">Delivery Details</h4>
+                <span class="px-2.5 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-bold tracking-widest flex items-center gap-1.5 border border-blue-100">
+                    <div class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-[ping_1.5s_cubic-bezier(0,0,0.2,1)_infinite]"></div> 
+                    LIVE
+                </span>
+            </div>
+            
+            <div class="space-y-5">
+                <div>
+                    <p class="text-[11px] text-gray-400 font-extrabold tracking-widest mb-2 uppercase">Volunteer</p>
+                    <div class="flex items-center gap-3 text-sm font-bold text-gray-800 mb-1">
+                        <i class="fa-solid fa-user text-blue-500 w-4 text-center"></i> 
+                        {{ delivery.volunteer.full_name }}
+                    </div>
+                    <div class="flex items-center gap-3 text-sm text-gray-500 mb-1 font-medium">
+                        <i class="fa-solid fa-phone w-4 text-center text-gray-400"></i> 
+                        {{ delivery.volunteer.phone }}
+                    </div>
+                    <div class="flex items-center gap-3 text-sm text-gray-500 font-medium">
+                        <i class="fa-solid fa-car w-4 text-center text-gray-400"></i> 
+                        {{ delivery.volunteer.vehicle_type }}
+                    </div>
+                </div>
+                
+                <div>
+                    <p class="text-[11px] text-gray-400 font-extrabold tracking-widest mb-2 uppercase">Pickup (Donor)</p>
+                    <div class="flex items-start gap-3 text-sm font-medium text-gray-800 leading-relaxed">
+                        <i class="fa-solid fa-location-dot text-red-500 mt-1 w-4 text-center text-base"></i> 
+                        <span class="line-clamp-2 pr-2">{{ delivery.donation.pickup_address }}</span>
+                    </div>
+                </div>
+                
+                <div>
+                    <p class="text-[11px] text-gray-400 font-extrabold tracking-widest mb-2 uppercase">Dropoff (NGO)</p>
+                    <div class="flex items-start gap-3 text-sm font-medium text-gray-800 leading-relaxed">
+                        <i class="fa-solid fa-location-dot text-green-500 mt-1 w-4 text-center text-base"></i> 
+                        <span class="line-clamp-2 pr-2">{{ delivery.donation.claimed_by_ngo.address }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Center Overlay: Broadcast & Simulation -->
+        <div class="absolute bottom-8 left-1/2 -translate-x-1/2 bg-white/95 backdrop-blur-md px-6 py-3.5 rounded-full shadow-xl z-[1000] flex items-center gap-4 border border-gray-100 transition-all duration-300">
+            {% if current_user.role == 'volunteer' and delivery.status not in ['Pending', 'Delivered'] %}
+                <div class="w-3 h-3 rounded-full bg-blue-500 animate-[ping_1.5s_cubic-bezier(0,0,0.2,1)_infinite]"></div>
+                <span class="font-extrabold text-gray-800 text-sm tracking-wide">Broadcasting Location...</span>
+                
+                <!-- Test Movement Button (Simulate) -->
+                <button id="demo-simulate-btn" class="ml-2 px-4 py-1.5 bg-[#edf2f7] hover:bg-[#e2e8f0] text-blue-600 rounded-lg text-sm font-bold transition-colors border border-blue-100 shadow-sm flex items-center">
+                    Test Movement
+                </button>
+            {% elif delivery.status not in ['Pending', 'Delivered'] %}
+                <div class="w-3 h-3 rounded-full bg-green-500 animate-[ping_1.5s_cubic-bezier(0,0,0.2,1)_infinite]"></div>
+                <span class="font-extrabold text-gray-800 text-sm tracking-wide">Tracking Active Delivery</span>
+            {% else %}
+                <div class="w-3 h-3 rounded-full bg-gray-400"></div>
+                <span class="font-extrabold text-gray-500 text-sm tracking-wide">Delivery {{ delivery.status }}</span>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Leaflet CSS and JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<!-- Socket.IO -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', async function () {
+        // Initialize Map
+        const map = L.map('map', {zoomControl: false}).setView([20.5937, 78.9629], 5);
+        L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Custom Marker Icons
+        const volunteerIcon = L.divIcon({
+            className: 'custom-div-icon',
+            html: "<div class='bg-blue-600 rounded-full h-10 w-10 flex items-center justify-center shadow-lg border-2 border-white ring-4 ring-blue-300 transition-all'><i class='fa-solid fa-car text-white text-lg'></i></div>",
+            iconSize: [40, 40],
+            iconAnchor: [20, 20]
+        });
+
+        const pickupIcon = L.divIcon({
+            className: 'custom-div-icon',
+            html: "<div class='bg-red-500 rounded-full h-8 w-8 flex items-center justify-center shadow-md border-2 border-white'><i class='fa-solid fa-box text-white text-sm'></i></div><div class='w-1 h-3 bg-gray-800 mx-auto'></div>",
+            iconSize: [32, 44],
+            iconAnchor: [16, 44]
+        });
+
+        const dropoffIcon = L.divIcon({
+            className: 'custom-div-icon',
+            html: "<div class='bg-green-500 rounded-full h-8 w-8 flex items-center justify-center shadow-md border-2 border-white'><i class='fa-solid fa-building text-white text-sm'></i></div><div class='w-1 h-3 bg-gray-800 mx-auto'></div>",
+            iconSize: [32, 44],
+            iconAnchor: [16, 44]
+        });
+
+        // App State Variables
+        let volunteerMarker = null;
+        let pLatLng = null;
+        let dLatLng = null;
+        const isVolunteer = "{{ current_user.role }}" === "volunteer";
+        const deliveryId = {{ delivery.id }};
+        const initLat = {{ delivery.current_lat | default('null', true) }};
+        const initLng = {{ delivery.current_lng | default('null', true) }};
+
+        if (initLat !== null && initLng !== null) {
+            updateVolunteerMarker(initLat, initLng);
+        }
+
+        const socket = io();
+        socket.on('connect', () => {
+            console.log("Socket connected!");
+            socket.emit('join_delivery', { room: deliveryId });
+        });
+
+        // -------------------------
+        // Geocode Pickup & Dropoff
+        // -------------------------
+        async function geocode(address) {
+            try {
+                // simple delay to respect rate limit (1req/sec) for nominatim
+                await new Promise(r => setTimeout(r, 1000)); 
+                const q = encodeURIComponent(address);
+                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${q}&limit=1`);
+                const data = await res.json();
+                if (data && data.length > 0) {
+                    return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+                }
+            } catch (e) {
+                console.warn("Geocoding failed for", address);
+            }
+            return null;
+        }
+
+        pLatLng = await geocode("{{ delivery.donation.pickup_address|replace('\n', ' ') }}");
+        dLatLng = await geocode("{{ delivery.donation.claimed_by_ngo.address|replace('\n', ' ') }}");
+
+        const bounds = [];
+        if (pLatLng) {
+            L.marker(pLatLng, {icon: pickupIcon}).addTo(map).bindPopup("<b>Pickup</b><br>Donor Location");
+            bounds.push(pLatLng);
+            
+            // Draw circle around pickup
+            L.circle(pLatLng, {
+                color: 'red',
+                fillColor: '#f03',
+                fillOpacity: 0.1,
+                radius: 500
+            }).addTo(map);
+        }
+        
+        if (dLatLng) {
+            L.marker(dLatLng, {icon: dropoffIcon}).addTo(map).bindPopup("<b>Dropoff</b><br>NGO Location");
+            bounds.push(dLatLng);
+        }
+
+        // Draw dotted path line between A and B if both exist
+        if (pLatLng && dLatLng) {
+            L.polyline([pLatLng, dLatLng], {
+                color: '#6366f1', 
+                weight: 3, 
+                dashArray: '10, 10', 
+                opacity: 0.8
+            }).addTo(map);
+        }
+
+        // Fit map bounds to show all markers
+        if (bounds.length > 0) {
+            if (volunteerMarker) bounds.push(volunteerMarker.getLatLng());
+            map.fitBounds(bounds, {padding: [50, 50], maxZoom: 16});
+        }
+        
+        // -------------------------
+        // Real Geolocation Tracking
+        // -------------------------
+        let watchId = null;
+        if (isVolunteer) {
+            if ("geolocation" in navigator) {
+                watchId = navigator.geolocation.watchPosition(
+                    (position) => {
+                        if (isSimulating) return; // ignore real GPS if simulating
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        updateVolunteerMarker(lat, lng);
+                        socket.emit('location_update', { delivery_id: deliveryId, lat: lat, lng: lng });
+                    },
+                    (error) => { console.log('Location access denied or unavailable.'); },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                );
+            }
+        }
+
+        socket.on('new_location', (data) => {
+            updateVolunteerMarker(data.lat, data.lng);
+        });
+
+        function updateVolunteerMarker(lat, lng) {
+            if (volunteerMarker) {
+                volunteerMarker.setLatLng([lat, lng]);
+            } else {
+                volunteerMarker = L.marker([lat, lng], { icon: volunteerIcon, zIndexOffset: 1000 }).addTo(map);
+                volunteerMarker.bindPopup("<b>Volunteer</b><br>Moving...").openPopup();
+            }
+            // Auto pan if marker is off-screen
+            if (!map.getBounds().contains([lat, lng])) {
+                map.panTo([lat, lng], {animate: true, duration: 1});
+            }
+        }
+
+        // -------------------------
+        // Simulation Toggle Logic
+        // -------------------------
+        let isSimulating = false;
+        const simBtn = document.getElementById('demo-simulate-btn');
+        if (simBtn) {
+            simBtn.addEventListener('click', () => {
+                if (!pLatLng || !dLatLng) {
+                    alert("Geocoding hasn't finished yet. Please wait a moment for the locations to resolve.");
+                    return;
+                }
+                if (isSimulating) return;
+                isSimulating = true;
+                
+                simBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Simulating...';
+                
+                if(watchId) navigator.geolocation.clearWatch(watchId);
+
+                const steps = 60; // Total frames for animation
+                let currentStep = 0;
+
+                const latDiff = (dLatLng[0] - pLatLng[0]) / steps;
+                const lngDiff = (dLatLng[1] - pLatLng[1]) / steps;
+
+                let curLat = pLatLng[0];
+                let curLng = pLatLng[1];
+                
+                // Fly to pickup start location to begin
+                map.flyTo([curLat, curLng], 16, {duration: 1.5});
+
+                const simInterval = setInterval(() => {
+                    curLat += latDiff;
+                    curLng += lngDiff;
+                    currentStep++;
+
+                    updateVolunteerMarker(curLat, curLng);
+                    socket.emit('location_update', { delivery_id: deliveryId, lat: curLat, lng: curLng });
+
+                    if (currentStep >= steps) {
+                        clearInterval(simInterval);
+                        isSimulating = false;
+                        simBtn.innerHTML = '<i class="fa-solid fa-check mr-2"></i> Arrived';
+                        simBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                        simBtn.disabled = true;
+                        
+                        setTimeout(() => {
+                            map.flyTo(dLatLng, 17, {duration: 2});
+                        }, 1000);
+                    }
+                }, 1000); 
+            });
+        }
+    });
+</script>
+{% endblock %}

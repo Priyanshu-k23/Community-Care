@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 w-full flex-grow transition-colors duration-300">
+
+    <div class="md:flex md:items-center md:justify-between mb-8 animate-fade-in-up">
+        <div class="flex-1 min-w-0">
+            <h2 class="text-3xl font-bold font-heading leading-7 text-gray-900 dark:text-white sm:truncate">
+                Manage Donations
+            </h2>
+        </div>
+        <div class="mt-4 flex md:mt-0 md:ml-4">
+            <a href="{{ url_for('admin.dashboard') }}"
+                class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-dark-panel hover:bg-gray-50 dark:hover:bg-dark-bg transition-colors">
+                <i class="fa-solid fa-arrow-left mr-2"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="glass-panel shadow-lg overflow-x-auto rounded-2xl animate-fade-in-up" style="animation-delay: 0.1s;">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-dark-border">
+            <thead class="bg-gray-50/80 dark:bg-dark-bg/80 backdrop-blur-sm">
+                <tr>
+                    <th scope="col"
+                        class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type /
+                        Quantity</th>
+                    <th scope="col"
+                        class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Donor
+                    </th>
+                    <th scope="col"
+                        class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">NGO</th>
+                    <th scope="col"
+                        class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Volunteer
+                    </th>
+                    <th scope="col"
+                        class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status
+                    </th>
+                    <th scope="col"
+                        class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-dark-border">
+                {% for d in donations %}
+                <tr class="hover:bg-gray-50/50 dark:hover:bg-dark-panel/50 transition-colors">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                            {% if d.item_type == 'Food' %}<i class="fa-solid fa-bowl-food text-orange-500"></i>
+                            {% elif d.item_type == 'Medicine' %}<i class="fa-solid fa-pills text-blue-500"></i>
+                            {% elif d.item_type == 'Sanitary' %}<i class="fa-solid fa-pump-soap text-brand-500"></i>
+                            {% else %}<i class="fa-solid fa-box text-gray-500"></i>{% endif %}
+                            {{ d.item_type }}
+                        </div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-xs truncate" title="{{ d.quantity_desc }}">{{ d.quantity_desc }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900 dark:text-gray-200">{{ d.donor.full_name }}</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400">{{ d.donor.user.email }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if d.claimed_by_ngo %}
+                        <div class="text-sm font-medium text-gray-900 dark:text-gray-200">{{ d.claimed_by_ngo.name }}</div>
+                        {% else %}
+                        <span class="text-sm text-gray-400 italic">None</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if d.delivery and d.delivery.volunteer %}
+                        <div class="text-sm font-medium text-gray-900 dark:text-gray-200">{{ d.delivery.volunteer.full_name }}</div>
+                        {% else %}
+                        <span class="text-sm text-gray-400 italic">None</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-lg border border-transparent
+                            {% if d.status == 'Available' %}bg-brand-100 text-brand-800 dark:bg-brand-900/30 dark:text-brand-400 dark:border-brand-800
+                            {% elif d.status == 'Claimed' %}bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800
+                            {% elif d.status == 'Delivered' %}bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600
+                            {% else %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800{% endif %} shadow-sm">
+                            {{ d.status }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                        {{ d.created_at.strftime('%Y-%m-%d') }}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="px-6 py-12 text-center">
+                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 dark:bg-dark-panel text-gray-400 dark:text-gray-500 mb-4">
+                            <i class="fa-solid fa-box-open text-2xl"></i>
+                        </div>
+                        <p class="text-lg font-medium text-gray-900 dark:text-white">No Donations Found</p>
+                        <p class="text-gray-500 dark:text-gray-400 mt-1">No donations have been recorded in the system yet.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

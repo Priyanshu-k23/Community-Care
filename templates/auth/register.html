@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-transparent transition-colors duration-300">
+    <div class="max-w-5xl w-full flex flex-col md:flex-row glass-panel rounded-3xl overflow-hidden animate-fade-in-up shadow-2xl !p-0">
+        <!-- Image Panel -->
+        <div class="hidden md:block md:w-2/5 relative bg-brand-50 dark:bg-dark-bg">
+            <img src="{{ url_for('static', filename='images/hero_image.png') }}" alt="ShareCare Register" class="absolute inset-0 h-full w-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-t from-brand-900/60 to-transparent"></div>
+        </div>
+        
+        <!-- Form Panel -->
+        <div class="w-full md:w-3/5 p-8 sm:p-12 flex flex-col justify-center">
+
+        <h2 class="text-center text-3xl font-extrabold text-gray-900 dark:text-white mb-6 font-heading">
+            Join ShareCare
+        </h2>
+
+        <!-- Role Tabs -->
+        <div class="flex justify-center mb-8 border-b border-gray-200 dark:border-dark-border">
+            <a href="{{ url_for('auth.register', role='donor') }}"
+                class="px-6 py-3 transition-colors {% if role == 'donor' %}border-b-2 border-brand-500 text-brand-600 dark:text-brand-400 font-semibold{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300{% endif %}">Donor</a>
+            <a href="{{ url_for('auth.register', role='ngo') }}"
+                class="px-6 py-3 transition-colors {% if role == 'ngo' %}border-b-2 border-brand-500 text-brand-600 dark:text-brand-400 font-semibold{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300{% endif %}">NGO</a>
+            <a href="{{ url_for('auth.register', role='volunteer') }}"
+                class="px-6 py-3 transition-colors {% if role == 'volunteer' %}border-b-2 border-brand-500 text-brand-600 dark:text-brand-400 font-semibold{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300{% endif %}">Volunteer</a>
+        </div>
+
+        <form action="{{ url_for('auth.register_post', role=role) }}" method="POST" enctype="multipart/form-data"
+            class="space-y-6">
+
+            <!-- Common Fields -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email Address</label>
+                    <input type="email" name="email" required
+                        class="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-bg text-gray-900 dark:text-white rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm transition-colors">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
+                    <input type="password" name="password" required
+                        class="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-bg text-gray-900 dark:text-white rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm transition-colors">
+                </div>
+            </div>
+
+            <!-- Role Specific Fields -->
+            {% if role == 'donor' %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Full Name</label>
+                    <input type="text" name="full_name" required
+                        class="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-bg text-gray-900 dark:text-white rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm transition-colors">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone Number</label>
+                    <input type="text" name="phone" required
+                        class="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-bg text-gray-900 dark:text-white rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm transition-colors">
+                </div>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Address</label>
+                <textarea name="address" required rows="3"
+                    class="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-bg text-gray-900 dark:text-white rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm transition-colors"></textarea>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Government ID Upload (PDF, JPG, PNG)</label>
+                <input type="file" name="document" accept=".pdf,.jpg,.jpeg,.png" required
+                    class="mt-1 block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-brand-50 file:text-brand-700 dark:file:bg-brand-900/30 dark:file:text-brand-400 hover:file:bg-brand-100 dark:hover:file:bg-brand-900/50 transition-colors cursor-pointer">
+            </div>
+
+            {% elif role == 'ngo' %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">NGO Name</label>
+                    <input type="text" name="name" required
+                        class="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-bg text-gray-900 dark:text-white rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm transition-colors">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Registration Number</label>
+                    <input type="text" name="registration_number" required
+                        class="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-bg text-gray-900 dark:text-white rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm transition-colors">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Contact Person Name</label>
+                    <input type="text" name="contact_person" required
+                        class="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-bg text-gray-900 dark:text-white rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm transition-colors">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone Number</label>
+                    <input type="text" name="phone" required
+                        class="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-bg text-gray-900 dark:text-white rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm transition-colors">
+                </div>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Address</label>
+                <textarea name="address" required rows="3"
+                    class="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-bg text-gray-900 dark:text-white rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm transition-colors"></textarea>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">NGO Certificate Upload (PDF, JPG, PNG)</label>
+                <input type="file" name="document" accept=".pdf,.jpg,.jpeg,.png" required
+                    class="mt-1 block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-brand-50 file:text-brand-700 dark:file:bg-brand-900/30 dark:file:text-brand-400 hover:file:bg-brand-100 dark:hover:file:bg-brand-900/50 transition-colors cursor-pointer">
+            </div>
+
+            {% elif role == 'volunteer' %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Full Name</label>
+                    <input type="text" name="full_name" required
+                        class="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-bg text-gray-900 dark:text-white rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm transition-colors">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone Number</label>
+                    <input type="text" name="phone" required
+                        class="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-bg text-gray-900 dark:text-white rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm transition-colors">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Vehicle Type</label>
+                    <select name="vehicle_type"
+                        class="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-bg text-gray-900 dark:text-white rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm transition-colors">
+                        <option value="None">None (Walking/Public Transport)</option>
+                        <option value="Two-wheeler">Two-wheeler (Bike/Scooter)</option>
+                        <option value="Four-wheeler">Four-wheeler (Car/Van)</option>
+                        <option value="Truck">Truck/Large Vehicle</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Address</label>
+                <textarea name="address" required rows="3"
+                    class="mt-1 block w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-bg text-gray-900 dark:text-white rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm transition-colors"></textarea>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">ID Proof Upload (PDF, JPG, PNG)</label>
+                <input type="file" name="document" accept=".pdf,.jpg,.jpeg,.png" required
+                    class="mt-1 block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-brand-50 file:text-brand-700 dark:file:bg-brand-900/30 dark:file:text-brand-400 hover:file:bg-brand-100 dark:hover:file:bg-brand-900/50 transition-colors cursor-pointer">
+            </div>
+            {% endif %}
+
+            <div class="pt-4 border-t border-gray-200 dark:border-dark-border mt-6">
+                <button type="submit"
+                    class="mt-6 w-full flex justify-center py-3 border border-transparent rounded-lg shadow-lg shadow-brand-500/30 text-base font-medium text-white bg-brand-600 hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-all duration-300 transform hover:-translate-y-1">
+                    Register as {{ role|capitalize }}
+                </button>
+            </div>
+
+            <div class="text-sm text-center">
+                <a href="{{ url_for('auth.login') }}" class="font-medium text-gray-600 hover:text-brand-500 dark:text-gray-400 dark:hover:text-brand-400">
+                    Already have an account? <span class="underline">Login here</span>
+                </a>
+            </div>
+        </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ShareCare{% endblock %}</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        },
+                        dark: {
+                            bg: '#0f172a',
+                            panel: '#1e293b',
+                            border: '#334155'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0fdf4;
+            background-image: radial-gradient(#dcfce7 1px, transparent 1px);
+            background-size: 20px 20px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        .dark body {
+            background-color: #0f172a;
+            background-image: radial-gradient(#1e293b 1px, transparent 1px);
+            color: #f8fafc;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+        }
+
+        .dark .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        .glass-panel:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .dark .glass-panel:hover {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+
+        /* Toast Animation */
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .toast-enter {
+            animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+    </style>
+    
+    <!-- Theme Script -->
+    <script>
+        // Check local storage or system preference
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+</head>
+
+<body class="min-h-screen flex flex-col font-sans text-gray-800 dark:text-gray-100 transition-colors duration-300">
+    <!-- Navbar -->
+    <nav class="bg-white/80 dark:bg-dark-panel/80 backdrop-blur-md border-b border-gray-200 dark:border-dark-border sticky top-0 z-50 transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="shrink-0 flex items-center">
+                        <a href="{{ url_for('main.index') }}"
+                            class="text-2xl font-bold font-heading text-brand-600 dark:text-brand-400 flex items-center gap-2 hover:opacity-80 transition-opacity">
+                            <i class="fa-solid fa-hand-holding-heart"></i> ShareCare
+                        </a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2 sm:space-x-4">
+                    <!-- Theme Toggle -->
+                    <button id="theme-toggle" class="p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 focus:outline-none transition-colors mr-2 cursor-pointer" aria-label="Toggle Dark Mode">
+                        <i id="theme-toggle-dark-icon" class="fa-solid fa-moon hidden text-lg"></i>
+                        <i id="theme-toggle-light-icon" class="fa-solid fa-sun hidden text-lg"></i>
+                    </button>
+
+                    {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('main.leaderboard') }}"
+                            class="text-gray-700 dark:text-gray-300 hover:text-brand-600 dark:hover:text-brand-400 px-3 py-2 rounded-md text-sm font-medium transition-colors"><i class="fa-solid fa-trophy text-yellow-500 mr-1"></i> Leaderboard</a>
+                        {% if current_user.role == 'admin' %}
+                        <a href="{{ url_for('admin.dashboard') }}"
+                            class="text-gray-700 dark:text-gray-300 hover:text-brand-600 dark:hover:text-brand-400 px-3 py-2 rounded-md text-sm font-medium transition-colors">Dashboard</a>
+                        {% elif current_user.role == 'donor' %}
+                        <a href="{{ url_for('donor.dashboard') }}"
+                            class="text-gray-700 dark:text-gray-300 hover:text-brand-600 dark:hover:text-brand-400 px-3 py-2 rounded-md text-sm font-medium transition-colors">Dashboard</a>
+                        {% elif current_user.role == 'ngo' %}
+                        <a href="{{ url_for('ngo.dashboard') }}"
+                            class="text-gray-700 dark:text-gray-300 hover:text-brand-600 dark:hover:text-brand-400 px-3 py-2 rounded-md text-sm font-medium transition-colors">Dashboard</a>
+                        {% elif current_user.role == 'volunteer' %}
+                        <a href="{{ url_for('volunteer.dashboard') }}"
+                            class="text-gray-700 dark:text-gray-300 hover:text-brand-600 dark:hover:text-brand-400 px-3 py-2 rounded-md text-sm font-medium transition-colors">Dashboard</a>
+                        {% endif %}
+                        
+                        <div class="flex items-center gap-3 pl-3 border-l border-gray-300 dark:border-gray-600 ml-3">
+                            <div class="flex items-center justify-center w-8 h-8 rounded-full shadow-sm text-white font-bold
+                                {% if current_user.role == 'admin' %}bg-gradient-to-br from-gray-600 to-gray-800
+                                {% elif current_user.role == 'donor' %}bg-gradient-to-br from-brand-400 to-brand-600
+                                {% elif current_user.role == 'ngo' %}bg-gradient-to-br from-blue-400 to-blue-600
+                                {% elif current_user.role == 'volunteer' %}bg-gradient-to-br from-yellow-400 to-yellow-600
+                                {% else %}bg-gradient-to-br from-gray-400 to-gray-600{% endif %}">
+                                {% if current_user.role == 'admin' %}<i class="fa-solid fa-user-shield text-sm"></i>
+                                {% elif current_user.role == 'donor' %}<i class="fa-solid fa-hand-holding-heart text-sm"></i>
+                                {% elif current_user.role == 'ngo' %}<i class="fa-solid fa-building text-sm"></i>
+                                {% elif current_user.role == 'volunteer' %}<i class="fa-solid fa-truck-fast text-sm"></i>
+                                {% else %}<i class="fa-solid fa-user text-sm"></i>{% endif %}
+                            </div>
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300 hidden sm:block">{{ current_user.email }}</span>
+                        </div>
+                        <a href="{{ url_for('auth.logout') }}"
+                            class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 px-3 py-2 rounded-md text-sm font-medium transition-colors"><i class="fa-solid fa-right-from-bracket"></i></a>
+                    {% else %}
+                        <a href="{{ url_for('auth.login') }}"
+                            class="text-gray-700 dark:text-gray-300 hover:text-brand-600 dark:hover:text-brand-400 px-3 py-2 rounded-md text-sm font-medium transition-colors">Login</a>
+                        <a href="{{ url_for('auth.register') }}"
+                            class="bg-brand-600 text-white hover:bg-brand-700 px-4 py-2 rounded-md text-sm font-medium transition-all shadow-md hover:shadow-lg dark:bg-brand-500 dark:hover:bg-brand-600">Sign Up</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    <div class="fixed top-20 right-4 z-50 flex flex-col gap-3 w-full max-w-sm pointer-events-none">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        {% set border_color = 'border-blue-400 dark:border-blue-600' %}
+        {% set icon = 'fa-circle-info text-blue-500 dark:text-blue-400' %}
+        {% if category == 'success' %}
+            {% set border_color = 'border-green-400 dark:border-green-600' %}
+            {% set icon = 'fa-circle-check text-green-500 dark:text-green-400' %}
+        {% endif %}
+        {% if category == 'danger' or category == 'error' %}
+            {% set border_color = 'border-red-400 dark:border-red-600' %}
+            {% set icon = 'fa-circle-xmark text-red-500 dark:text-red-400' %}
+        {% endif %}
+        {% if category == 'warning' %}
+            {% set border_color = 'border-yellow-400 dark:border-yellow-600' %}
+            {% set icon = 'fa-triangle-exclamation text-yellow-500 dark:text-yellow-400' %}
+        {% endif %}
+
+        <div class="toast-enter pointer-events-auto bg-white dark:bg-dark-panel border-l-4 {{ border_color }} shadow-xl rounded-r-lg p-4 flex items-start gap-3 transition-colors duration-300"
+            role="alert">
+            <i class="fa-solid {{ icon }} mt-0.5 text-lg"></i>
+            <div class="flex-1">
+                <span class="block text-gray-800 dark:text-gray-200 text-sm font-medium">{{ message }}</span>
+            </div>
+            <button onclick="this.parentElement.remove()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-grow flex flex-col">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-dark-panel border-t border-gray-200 dark:border-dark-border mt-auto transition-colors duration-300">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-gray-500 dark:text-gray-400 text-sm">
+                &copy; 2026 ShareCare. Connecting communities through sharing.
+            </p>
+        </div>
+    </footer>
+
+    <!-- Theme Toggle Script to handle button clicks -->
+    <script>
+        var themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+        var themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+        var themeToggleBtn = document.getElementById('theme-toggle');
+
+        // Change the icons inside the button based on previous settings
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            themeToggleLightIcon.classList.remove('hidden');
+        } else {
+            themeToggleDarkIcon.classList.remove('hidden');
+        }
+
+        themeToggleBtn.addEventListener('click', function() {
+            // toggle icons
+            themeToggleDarkIcon.classList.toggle('hidden');
+            themeToggleLightIcon.classList.toggle('hidden');
+
+            // if set via local storage previously
+            if (localStorage.getItem('theme')) {
+                if (localStorage.getItem('theme') === 'light') {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                }
+            } else {
+                // if NOT set via local storage previously
+                if (document.documentElement.classList.contains('dark')) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                }
+            }
+            
+            // Auto remove toasts after 5 seconds
+            setTimeout(() => {
+                const toasts = document.querySelectorAll('.toast-enter');
+                toasts.forEach(t => {
+                    t.style.opacity = '0';
+                    setTimeout(() => t.remove(), 300);
+                });
+            }, 5000);
+        });
+
+        // Initialize toast removal
+        setTimeout(() => {
+            const toasts = document.querySelectorAll('.toast-enter');
+            toasts.forEach(t => {
+                t.style.opacity = '0';
+                t.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => t.remove(), 300);
+            });
+        }, 5000);
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+
+</html>

@@ -1,0 +1,328 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 w-full flex-grow transition-colors duration-300">
+
+    <div class="md:flex md:items-center md:justify-between mb-8 pb-5 border-b border-gray-200 dark:border-dark-border animate-fade-in-up">
+        <div class="flex-1 min-w-0">
+            <h2 class="text-3xl font-bold font-heading text-gray-900 dark:text-white sm:truncate">
+                NGO Dashboard
+            </h2>
+            <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                Welcome back, <span class="font-medium text-blue-600 dark:text-blue-400">{{ current_user.ngo_profile.name }}</span>
+            </p>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2 mb-10 animate-fade-in-up" style="animation-delay: 0.05s;">
+        <div class="glass-panel overflow-hidden rounded-2xl p-6 shadow-lg relative group hover:-translate-y-2 transition-all duration-300">
+            <div class="absolute -right-6 -top-6 text-blue-100 dark:text-blue-900/30 opacity-50 group-hover:scale-110 transition-transform duration-500">
+                <i class="fa-solid fa-hand-holding-medical text-8xl"></i>
+            </div>
+            <div class="flex items-center relative z-10">
+                <div class="flex-shrink-0 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl p-4 shadow-md text-white">
+                    <i class="fa-solid fa-box-check text-2xl"></i>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                    <dl>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Donations Claimed</dt>
+                        <dd class="text-4xl font-bold font-heading text-gray-900 dark:text-white mt-1">{{ stats.total_claimed }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+        
+        <div class="glass-panel overflow-hidden rounded-2xl p-6 shadow-lg relative group hover:-translate-y-2 transition-all duration-300">
+            <div class="absolute -right-6 -top-6 text-brand-100 dark:text-brand-900/30 opacity-50 group-hover:scale-110 transition-transform duration-500">
+                <i class="fa-solid fa-users text-8xl"></i>
+            </div>
+            <div class="flex items-center relative z-10">
+                <div class="flex-shrink-0 bg-gradient-to-br from-brand-400 to-brand-600 rounded-xl p-4 shadow-md text-white">
+                    <i class="fa-solid fa-users-rectangle text-2xl"></i>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                    <dl>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Estimated People Reached</dt>
+                        <dd class="text-4xl font-bold font-heading text-gray-900 dark:text-white mt-1">{{ stats.people_fed }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Impact Chart -->
+    <div class="glass-panel overflow-hidden rounded-2xl p-6 shadow-lg mb-10 animate-fade-in-up" style="animation-delay: 0.08s;">
+        <h3 class="text-xl font-bold font-heading text-gray-900 dark:text-white mb-4">Your Impact Over Time</h3>
+        <div class="w-full h-64">
+            <canvas id="impactChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Available Donations -->
+    <h3 class="text-xl font-bold font-heading leading-6 text-gray-900 dark:text-white mb-6 flex items-center gap-2 animate-fade-in-up" style="animation-delay: 0.1s;">
+        <i class="fa-solid fa-hand-holding-heart text-brand-500"></i> Available Donations
+    </h3>
+    <div class="glass-panel shadow-lg sm:rounded-2xl divide-y divide-gray-200 dark:divide-dark-border mb-12 animate-fade-in-up overflow-hidden" style="animation-delay: 0.2s;">
+        {% if available %}
+        <ul role="list">
+            {% for d in available %}
+            <li>
+                <div class="block px-4 py-6 sm:px-6 hover:bg-gray-50/50 dark:hover:bg-dark-panel/80 transition-colors">
+                    <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm
+                                    {% if d.item_type == 'Food' %}bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400
+                                    {% elif d.item_type == 'Medicine' %}bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400
+                                    {% elif d.item_type == 'Sanitary' %}bg-brand-100 text-brand-600 dark:bg-brand-900/30 dark:text-brand-400
+                                    {% else %}bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400{% endif %}">
+                                    {% if d.item_type == 'Food' %}<i class="fa-solid fa-bowl-food text-xl"></i>
+                                    {% elif d.item_type == 'Medicine' %}<i class="fa-solid fa-pills text-xl"></i>
+                                    {% elif d.item_type == 'Sanitary' %}<i class="fa-solid fa-pump-soap text-xl"></i>
+                                    {% else %}<i class="fa-solid fa-box text-xl"></i>{% endif %}
+                                </div>
+                                <div>
+                                    <p class="text-xl font-bold font-heading text-gray-900 dark:text-white">
+                                        {{ d.item_type }}
+                                    </p>
+                                    <p class="text-md font-medium text-brand-600 dark:text-brand-400">
+                                        {{ d.quantity_desc }}
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4 bg-white/50 dark:bg-dark-bg/50 rounded-xl p-4 border border-gray-100 dark:border-dark-border/50 grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-4">
+                                <p class="text-sm text-gray-700 dark:text-gray-300 flex items-center">
+                                    <span class="w-6 flex justify-center text-gray-400 dark:text-gray-500"><i class="fa-solid fa-user"></i></span>
+                                    Donor: <span class="font-medium ml-1 text-gray-900 dark:text-white">{{ d.donor.full_name }}</span>
+                                </p>
+                                <p class="text-sm text-gray-700 dark:text-gray-300 flex items-start">
+                                    <span class="w-6 flex justify-center text-gray-400 dark:text-gray-500 mt-0.5"><i class="fa-solid fa-location-dot"></i></span>
+                                    <span class="line-clamp-2">{{ d.pickup_address }}</span>
+                                </p>
+                                <p class="text-sm text-gray-700 dark:text-gray-300 flex items-center">
+                                    <span class="w-6 flex justify-center text-gray-400 dark:text-gray-500"><i class="fa-regular fa-clock"></i></span>
+                                    Time: <span class="ml-1 font-medium">{{ d.pickup_datetime.strftime('%b %d, %I:%M %p') }}</span>
+                                </p>
+
+                                {% if d.item_type == 'Food' %}
+                                <p class="text-sm text-gray-700 dark:text-gray-300 flex items-center">
+                                    <span class="w-6 flex justify-center text-gray-400 dark:text-gray-500"><i class="fa-solid fa-utensils"></i></span>
+                                    Diet: <span class="ml-1 font-medium {% if d.is_veg %}text-green-600 dark:text-green-400{% else %}text-red-600 dark:text-red-400{% endif %}">{% if d.is_veg %}Veg{% else %}Non-Veg{% endif %}</span>
+                                </p>
+                                {% if d.feeds_people %}
+                                <p class="text-sm text-gray-700 dark:text-gray-300 flex items-center">
+                                    <span class="w-6 flex justify-center text-gray-400 dark:text-gray-500"><i class="fa-solid fa-users"></i></span>
+                                    Feeds: <span class="ml-1 font-medium">~{{ d.feeds_people }} people</span>
+                                </p>
+                                {% endif %}
+                                {% if d.expiry_time %}
+                                <p class="text-sm text-red-600 dark:text-red-400 font-medium flex items-center">
+                                    <span class="w-6 flex justify-center"><i class="fa-solid fa-hourglass-end"></i></span>
+                                    Expires: {{ d.expiry_time.strftime('%b %d, %H:%M') }}
+                                </p>
+                                {% endif %}
+                                {% endif %}
+                            </div>
+                            
+                            {% if d.notes %}
+                            <div class="mt-3 flex items-start">
+                                <i class="fa-solid fa-quote-left text-gray-300 dark:text-gray-600 mr-2 mt-1 py-0 text-sm"></i>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 italic">"{{ d.notes }}"</p>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mt-4 lg:mt-0 flex-shrink-0 flex items-center">
+                            <form action="{{ url_for('ngo.claim_donation', donation_id=d.id) }}" method="POST" class="w-full lg:w-auto">
+                                <button type="submit"
+                                    class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-xl shadow-md text-white bg-brand-600 hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 dark:focus:ring-offset-dark-panel transition-all hover:-translate-y-1 hover:shadow-lg w-full lg:w-auto">
+                                    <i class="fa-solid fa-hand-holding-medical mr-2"></i> Claim Donation
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="px-4 py-16 text-center sm:px-6">
+            <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-100 dark:bg-dark-panel text-gray-400 dark:text-gray-500 mb-6 mx-auto">
+                <i class="fa-solid fa-box-open text-4xl"></i>
+            </div>
+            <p class="text-gray-900 dark:text-white text-xl font-heading font-medium mb-2">No available donations</p>
+            <p class="text-gray-500 dark:text-gray-400 text-sm max-w-sm mx-auto">There are no donations available at the moment. Please check back later for new listings.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Claimed history -->
+    <h3 class="text-xl font-bold font-heading leading-6 text-gray-900 dark:text-white mb-6 flex items-center gap-2 animate-fade-in-up" style="animation-delay: 0.3s;">
+        <i class="fa-solid fa-clipboard-check text-blue-500"></i> Your Claimed History
+    </h3>
+    <div class="glass-panel shadow-lg sm:rounded-2xl divide-y divide-gray-200 dark:divide-dark-border animate-fade-in-up overflow-hidden" style="animation-delay: 0.4s;">
+        {% if claimed %}
+        <ul role="list">
+            {% for d in claimed %}
+            <li>
+                <div class="block px-4 py-5 sm:px-6 hover:bg-gray-50/50 dark:hover:bg-dark-panel/80 transition-colors">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div class="flex items-center">
+                            <div class="mr-4 flex-shrink-0">
+                                <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                                    <i class="fa-solid fa-box-check"></i>
+                                    {% if d.item_type == 'Food' %}<i class="fa-solid fa-bowl-food"></i>
+                                    {% elif d.item_type == 'Medicine' %}<i class="fa-solid fa-pills"></i>
+                                    {% elif d.item_type == 'Sanitary' %}<i class="fa-solid fa-pump-soap"></i>
+                                    {% else %}<i class="fa-solid fa-box"></i>{% endif %}
+                                </div>
+                            </div>
+                            <div>
+                                <p class="text-base font-bold text-gray-900 dark:text-white">
+                                    {{ d.item_type }}
+                                </p>
+                                <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                    {{ d.quantity_desc }}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-col items-start sm:items-end gap-2">
+                            <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full border shadow-sm
+                                    {% if d.status == 'Claimed' %}bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800
+                                    {% elif d.status == 'Picked Up' %}bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400 border-purple-200 dark:border-purple-800
+                                    {% elif d.status == 'On The Way' %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800
+                                    {% elif d.status == 'Delivered' %}bg-brand-100 text-brand-800 dark:bg-brand-900/30 dark:text-brand-400 border-brand-200 dark:border-brand-800
+                                    {% endif %}">
+                                {% if d.status == 'Claimed' %}<i class="fa-solid fa-hand-holding mr-1.5"></i>
+                                {% elif d.status == 'Picked Up' %}<i class="fa-solid fa-box-open mr-1.5"></i>
+                                {% elif d.status == 'On The Way' %}<i class="fa-solid fa-truck-fast mr-1.5"></i>
+                                {% elif d.status == 'Delivered' %}<i class="fa-solid fa-check-circle mr-1.5"></i>
+                                {% endif %}
+                                {{ d.status }}
+                            </span>
+                            
+                            {% if d.status in ['On The Way', 'Picked Up', 'Claimed'] and d.delivery %}
+                            <a href="{{ url_for('main.track_delivery', delivery_id=d.delivery.id) }}"
+                                class="text-sm text-brand-600 hover:text-brand-800 dark:text-brand-400 dark:hover:text-brand-300 font-medium border border-brand-200 dark:border-brand-800/50 rounded-lg px-3 py-1.5 bg-brand-50 dark:bg-brand-900/20 hover:bg-brand-100 dark:hover:bg-brand-900/40 transition-colors flex items-center shadow-sm">
+                                <div class="relative flex h-2.5 w-2.5 mr-2">
+                                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
+                                  <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-brand-500"></span>
+                                </div>
+                                Track Delivery
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 sm:flex sm:justify-between items-center bg-gray-50/80 dark:bg-dark-bg/50 p-3 rounded-xl border border-gray-100 dark:border-dark-border/50">
+                        <div class="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                            <i class="fa-solid fa-user text-gray-400 mr-2"></i>
+                            Donor: <span class="font-medium text-gray-900 dark:text-white ml-1">{{ d.donor.full_name }}</span>
+                        </div>
+                        <div class="mt-2 text-sm text-gray-500 dark:text-gray-400 sm:mt-0 flex items-center">
+                            <i class="fa-regular fa-calendar-check mr-1.5 text-gray-400"></i>
+                            Claimed on: {{ d.claimed_at.strftime('%b %d, %I:%M %p') }}
+                        </div>
+                    </div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="px-4 py-12 text-center sm:px-6">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 dark:bg-dark-panel text-gray-400 dark:text-gray-500 mb-4 mx-auto">
+                <i class="fa-solid fa-clipboard text-2xl"></i>
+            </div>
+            <p class="text-gray-500 dark:text-gray-400 text-lg font-medium">You haven't claimed any donations yet.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const ctx = document.getElementById('impactChart').getContext('2d');
+        
+        // Gradient for line
+        let gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(59, 130, 246, 0.5)'); // Blue color
+        gradient.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
+        
+        // Mock data based on stats
+        const totalClaimed = {{ stats.total_claimed }};
+        const mockData = [0, Math.round(totalClaimed*0.1), Math.round(totalClaimed*0.3), Math.round(totalClaimed*0.6), Math.round(totalClaimed*0.8), totalClaimed];
+        
+        const isDarkMode = document.documentElement.classList.contains('dark');
+        const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+        const textColor = isDarkMode ? '#f3f4f6' : '#4b5563';
+
+        const chart = new Chart(ctx, {
+            type: 'bar', // Using a bar chart for NGOs for variety
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Donations Claimed',
+                    data: mockData,
+                    backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                    borderColor: '#3b82f6',
+                    borderWidth: 1,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: isDarkMode ? '#1f2937' : '#fff',
+                        titleColor: isDarkMode ? '#fff' : '#1f2937',
+                        bodyColor: isDarkMode ? '#cbd5e1' : '#475569',
+                        borderColor: isDarkMode ? '#374151' : '#e2e8f0',
+                        borderWidth: 1,
+                        padding: 10
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: gridColor, drawBorder: false },
+                        ticks: { color: textColor, precision: 0 }
+                    },
+                    x: {
+                        grid: { display: false, drawBorder: false },
+                        ticks: { color: textColor }
+                    }
+                }
+            }
+        });
+
+        // Handle Theme changes for the chart dynamically
+        var themeToggleBtn = document.getElementById('theme-toggle');
+        if (themeToggleBtn) {
+            themeToggleBtn.addEventListener('click', function() {
+                setTimeout(() => {
+                    const dark = document.documentElement.classList.contains('dark');
+                    chart.options.scales.y.grid.color = dark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                    chart.options.scales.y.ticks.color = dark ? '#f3f4f6' : '#4b5563';
+                    chart.options.scales.x.ticks.color = dark ? '#f3f4f6' : '#4b5563';
+                    if (chart.options.plugins.tooltip) {
+                        chart.options.plugins.tooltip.backgroundColor = dark ? '#1f2937' : '#fff';
+                        chart.options.plugins.tooltip.titleColor = dark ? '#fff' : '#1f2937';
+                        chart.options.plugins.tooltip.bodyColor = dark ? '#cbd5e1' : '#475569';
+                        chart.options.plugins.tooltip.borderColor = dark ? '#374151' : '#e2e8f0';
+                    }
+                    chart.update();
+                }, 100);
+            });
+        }
+    });
+</script>
+{% endblock %}

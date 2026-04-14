@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+    <div class="glass-panel p-8 rounded-2xl shadow-xl">
+        <h1 class="text-4xl font-extrabold text-gray-900 mb-6 border-b pb-4">About ShareCare</h1>
+
+        <div class="prose prose-green lg:prose-lg text-gray-700">
+            <p class="lead text-xl font-medium text-gray-900 mb-6">
+                ShareCare is an integrated ecosystem designed to tackle two interconnected problems: waste generation
+                and resource scarcity.
+            </p>
+
+            <h3 class="text-2xl font-bold text-gray-800 mt-8 mb-4">The Mission</h3>
+            <p class="mb-6">
+                Every day, surplus food from restaurants, unused medicines, and essential sanitary items are discarded,
+                while numerous communities lack access to these very resources. ShareCare provides the technological
+                bridge between those who have excess and those who are in persistent need, facilitated by verified NGOs
+                and dedicated volunteers.
+            </p>
+
+            <h3 class="text-2xl font-bold text-gray-800 mt-8 mb-4">How It Works</h3>
+            <div class="bg-green-50 rounded-xl p-6 border border-green-100 shadow-inner">
+                <ol class="list-decimal pl-5 space-y-4">
+                    <li><strong class="text-green-800">Donate:</strong> Verified donors list their surplus items—from
+                        perishables to medicines.</li>
+                    <li><strong class="text-green-800">Claim:</strong> Verified NGOs monitor the dashboard and claim
+                        available donations on a first-come, first-serve basis.</li>
+                    <li><strong class="text-green-800">Deliver:</strong> Volunteers accept the live transportation task,
+                        picking up from the donor and arriving directly at the NGO.</li>
+                    <li><strong class="text-green-800">Track:</strong> Using live tracking mapping integration, both
+                        donor and NGO can monitor the progress of the delivery.</li>
+                </ol>
+            </div>
+
+            <h3 class="text-2xl font-bold text-gray-800 mt-8 mb-4">Trust & Verification</h3>
+            <p>
+                To maintain the integrity of our platform, all participating entities (Donors, NGOs, Validators, and
+                Volunteers) must provide government-issued IDs or registration certificates. Our Administrators review
+                all applications to ensure that ShareCare remains a secure, trustworthy sharing network.
+            </p>
+        </div>
+
+        <div class="mt-10 text-center">
+            <a href="{{ url_for('auth.register') }}"
+                class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+                Start Making an Impact Today
+                <i class="fa-solid fa-arrow-right ml-2"></i>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
